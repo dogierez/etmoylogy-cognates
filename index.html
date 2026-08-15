@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio Library - Etymology Cognates</title>
+<style>
+:root{--s-black:#000;--s-base:#121212;--s-elev:#1a1a1a;--s-high:#2a2a2a;--s-dim:#a7a7a7;--s-bright:#fff;--s-green:#1db954;--s-green-hover:#1ed760;--p-color:#8e44ad;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;}
+body{background-color:var(--s-black);color:var(--s-bright);display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:240px;background-color:var(--s-black);display:flex;flex-direction:column;padding:24px;flex-shrink:0;z-index:10;}
+.sidebar h2{font-size:14px;color:var(--s-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:20px;}
+.nav-link{color:var(--s-dim);text-decoration:none;font-size:14px;font-weight:bold;margin-bottom:16px;display:flex;align-items:center;cursor:pointer;transition:color 0.2s;}
+.nav-link:hover,.nav-link.active{color:var(--s-bright);}
+.divider{height:1px;background-color:#282828;margin:10px 0 20px 0;}
+.main-view{flex:1;background-color:var(--s-base);border-radius:8px;margin:8px 8px 98px 0;display:flex;flex-direction:column;overflow-y:auto;position:relative;}
+.playlist-header{padding:40px 30px;display:flex;align-items:flex-end;background:linear-gradient(transparent 0,rgba(0,0,0,.5) 100%),var(--p-color);}
+.playlist-cover{width:200px;height:200px;background-color:#282828;box-shadow:0 4px 60px rgba(0,0,0,.5);margin-right:24px;border-radius:4px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:80px;}
+.playlist-info p{font-size:14px;font-weight:bold;margin-bottom:8px;}
+.playlist-info h1{font-size:4.5rem;font-weight:900;line-height:1.2;margin-bottom:15px;}
+.playlist-info .description{color:var(--s-dim);font-weight:normal;font-size:14px;}
+.action-bar{padding:24px 30px;background:linear-gradient(rgba(0,0,0,.6) 0,var(--s-base) 100%);display:flex;align-items:center;}
+.big-play-btn{width:56px;height:56px;background-color:var(--s-green);border-radius:50%;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-size:24px;padding-left:5px;transition:all 0.2s;flex-shrink:0;}
+.big-play-btn:hover{background-color:var(--s-green-hover);transform:scale(1.05);}
+.action-btn{background-color:transparent;color:var(--s-bright);border:1px solid #535353;border-radius:20px;padding:10px 20px;margin-left:15px;cursor:pointer;font-weight:bold;font-size:15px;transition:all 0.2s;}
+.action-btn:hover{border-color:var(--s-bright);transform:scale(1.02);background-color:rgba(255,255,255,0.1);}
+.transcript-container{margin:0 30px 20px 30px;padding:0 24px 24px 24px;background-color:var(--s-elev);border-radius:8px;display:none;line-height:1.8;font-size:1.15rem;border-left:4px solid #9b59b6;transition:all 0.3s ease;}
+.transcript-container.show{display:block;}
+.transcript-container.fullscreen{position:fixed;top:0;left:0;width:100vw;height:calc(100vh - 90px);z-index:9999;margin:0;border-radius:0;background-color:var(--s-base);border-left:none;border-top:4px solid #9b59b6;padding:2vh 5vw;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-start;}
+.transcript-container.fullscreen .transcript-header{margin-bottom:1.5vh;padding:2vh 0 1vh 0;border-bottom:1px solid #333;}
+.transcript-container.fullscreen h3{font-size:4.5vh;}
+.transcript-container.fullscreen p{font-size:3vh;line-height:1.5;margin-bottom:1.5vh;}
+.transcript-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:20px 0 15px 0;border-bottom:1px solid #333;position:sticky;top:0;background-color:var(--s-elev);z-index:10;}
+.transcript-container.fullscreen .transcript-header{background-color:var(--s-base);}
+.transcript-header h3{color:#9b59b6;text-shadow:0 0 8px rgba(155,89,182,0.5);font-size:1.8rem;margin:0;}
+.transcript-container p{margin-bottom:20px;}
+.dict-word{border-bottom:1px dashed var(--s-dim);cursor:pointer;transition:all 0.2s;}
+.dict-word.active{border-bottom:none;font-weight:bold;}
+.neon-en{color:#39ff14;text-shadow:0 0 8px rgba(57,255,20,0.4);}
+.neon-tr{color:#fbff00;text-shadow:0 0 8px rgba(255,255,0,0.4);}
+.track-list-container{padding:0 30px 40px 30px;}
+.track-list-header{display:grid;grid-template-columns:40px 1fr 150px;padding:5px 16px;border-bottom:1px solid #282828;color:var(--s-dim);font-size:13px;letter-spacing:1px;margin-bottom:16px;}
+.track-item{display:grid;grid-template-columns:40px 1fr 150px;align-items:center;padding:10px 16px;border-radius:4px;cursor:pointer;transition:background-color 0.2s;color:var(--s-dim);}
+.track-item:hover{background-color:var(--s-high);color:var(--s-bright);}
+.track-item.playing,.track-item.playing .track-title{color:var(--s-green);}
+.track-number{font-variant-numeric:tabular-nums;font-size:14px;}
+.track-item:hover .track-number{display:none;}
+.track-item:hover::before{content:"▶";width:40px;color:var(--s-bright);font-size:12px;display:block;}
+.track-info{display:flex;flex-direction:column;overflow:hidden;}
+.track-title{color:var(--s-bright);font-size:16px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.track-artist{font-size:13px;}
+.track-album{font-size:14px;}
+.player-bar{position:fixed;bottom:0;left:0;width:100%;height:90px;background-color:var(--s-black);display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-top:1px solid #282828;z-index:10000;}
+.now-playing-section{width:30%;display:flex;align-items:center;overflow:hidden;}
+.now-playing-art{font-size:32px;margin-right:10px;}
+.now-playing-info{display:flex;flex-direction:column;overflow:hidden;margin-left:10px;}
+.np-title{color:var(--s-bright);font-size:14px;margin-bottom:4px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.np-artist{color:var(--s-dim);font-size:12px;}
+.controls-section{width:40%;display:flex;flex-direction:column;align-items:center;}
+.buttons{display:flex;align-items:center;gap:24px;margin-bottom:8px;}
+.control-btn{background:none;border:none;color:var(--s-dim);font-size:18px;cursor:pointer;transition:color 0.2s;}
+.control-btn:hover{color:var(--s-bright);}
+.play-pause-btn{background-color:var(--s-bright);color:var(--s-black);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;padding-left:3px;}
+.play-pause-btn.playing{padding-left:0;}
+.play-pause-btn:hover{transform:scale(1.05);color:var(--s-black);}
+.progress-container{display:flex;align-items:center;width:100%;max-width:600px;gap:8px;font-size:11px;color:var(--s-dim);}
+.progress-bar{flex:1;height:4px;background-color:#535353;border-radius:2px;cursor:pointer;position:relative;}
+.progress-fill{height:100%;background-color:var(--s-bright);border-radius:2px;width:0%;}
+.progress-bar:hover .progress-fill{background-color:var(--s-green);}
+.right-section{width:30%;}
+@media (max-width:768px){
+body{flex-direction:column;}.sidebar{display:none;}.main-view{margin:0;border-radius:0;margin-bottom:120px;}.playlist-header{flex-direction:column;align-items:center;text-align:center;padding:30px 20px;}.playlist-cover{margin-right:0;margin-bottom:20px;width:160px;height:160px;font-size:64px;}.playlist-info h1{font-size:2.5rem;}.action-bar{flex-direction:column;padding:15px 20px;gap:15px;}.action-btn{margin-left:0;width:100%;text-align:center;}.transcript-container{margin:0 15px 20px 15px;padding:0 20px 20px 20px;}.transcript-container.fullscreen{padding:0 15px 20px 15px;}.transcript-header{flex-direction:column;gap:15px;}.track-list-container{padding:0 15px 40px 15px;}.track-list-header{grid-template-columns:40px 1fr;}.track-list-header div:nth-child(3){display:none;}.track-item{grid-template-columns:40px 1fr;}.track-album{display:none;}.player-bar{height:110px;flex-direction:column;justify-content:center;padding:10px 15px;}.now-playing-section{width:100%;justify-content:center;margin-bottom:8px;}.np-title{text-align:center;font-size:15px;}.np-artist{display:none;}.controls-section{width:100%;}.buttons{margin-bottom:8px;gap:35px;}.control-btn{font-size:22px;}.play-pause-btn{width:40px;height:40px;}.right-section{display:none;}
+}
+</style>
+</head>
+<body>
+<div class="sidebar"><a class="nav-link">Home</a><a class="nav-link">Search</a><a class="nav-link">Your Library</a><div class="divider"></div><h2>Playlists</h2><a class="nav-link active">Cognates</a></div>
+<div class="main-view">
+    <div class="playlist-header">
+        <div class="playlist-cover">🔤</div>
+        <div class="playlist-info"><p>Public Playlist</p><h1>Etymology Cognates</h1><div class="description">A collection of audio files for practicing etymology and cognates.</div></div>
+    </div>
+    <div class="action-bar">
+        <button class="big-play-btn" id="h-main-play-btn">▶</button>
+        <button class="action-btn" id="h-transcript-toggle">📖 Show Transcript</button>
+    </div>
+    <div class="transcript-container" id="h-transcript-container">
+        <div class="transcript-header">
+            <h3 id="h-transcript-title">Select a word to read</h3>
+            <button class="action-btn" id="h-fullscreen-btn" style="display:none;">⛶ Full Screen</button>
+        </div>
+        <div id="h-transcript-text">Press play on any track to view the transcript here. Click highlighted words for translation.</div>
+    </div>
+    <div class="track-list-container">
+        <div class="track-list-header"><div>#</div><div>Title</div><div>Album</div></div>
+        <div id="track-container"></div>
+    </div>
+</div>
+<div class="player-bar">
+    <div class="now-playing-section">
+        <div class="now-playing-art" id="np-art" style="display:none;">🔤</div>
+        <div class="now-playing-info">
+            <div class="np-title" id="h-now-playing-title"></div>
+            <div class="np-artist" id="h-now-playing-artist"></div>
+        </div>
+    </div>
+    <div class="controls-section">
+        <div class="buttons"><button class="control-btn" id="prev-btn">⏮</button><button class="control-btn play-pause-btn" id="h-play-pause-btn">▶</button><button class="control-btn" id="next-btn">⏭</button></div>
+        <div class="progress-container"><span id="current-time">0:00</span><div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div><span id="duration">0:00</span></div>
+    </div>
+    <div class="right-section"></div>
+</div>
+<audio id="audio-player"></audio>
+
+<script>
+// Base URL is set to relative for seamless GitHub Pages hosting
+const baseUrl = "";
+
+const tracks = [
+    {title:"1. Address",src:baseUrl + "Address male us.mp3",text:`Address`,dictionary:{}},
+    {title:"2. Alcohol",src:baseUrl + "Alcohol male us.mp3",text:`Alcohol`,dictionary:{}},
+    {title:"3. Ambulance",src:baseUrl + "Ambulance female us.mp3",text:`Ambulance`,dictionary:{}},
+    {title:"4. Anaconda",src:baseUrl + "Anaconda male us.mp3",text:`Anaconda`,dictionary:{}},
+    {title:"5. Anorak",src:baseUrl + "Anorak female us.mp3",text:`Anorak`,dictionary:{}},
+    {title:"6. Aquarium",src:baseUrl + "Aquarium male us.mp3",text:`Aquarium`,dictionary:{}},
+    {title:"7. Asphalt",src:baseUrl + "Asphalt female us.mp3",text:`Asphalt`,dictionary:{}},
+    {title:"8. Avocado",src:baseUrl + "Avocado female us.mp3",text:`Avocado`,dictionary:{}},
+    {title:"9. BBQ",src:baseUrl + "BBQ male us.mp3",text:`BBQ`,dictionary:{}},
+    {title:"10. Banana",src:baseUrl + "Banana male us.mp3",text:`Banana`,dictionary:{}},
+    {title:"11. Bank",src:baseUrl + "Bank female us.mp3",text:`Bank`,dictionary:{}},
+    {title:"12. Bikini",src:baseUrl + "Bikini male us.mp3",text:`Bikini`,dictionary:{}},
+    {title:"13. Bluetooth",src:baseUrl + "Bluetooth female us.mp3",text:`Bluetooth`,dictionary:{}},
+    {title:"14. Boycott",src:baseUrl + "Boycott female us.mp3",text:`Boycott`,dictionary:{}},
+    {title:"15. Bug",src:baseUrl + "Bug male us.mp3",text:`Bug`,dictionary:{}},
+    {title:"16. Bungalow",src:baseUrl + "Bungalow male us.mp3",text:`Bungalow`,dictionary:{}},
+    {title:"17. Cactus",src:baseUrl + "Cactus female us.mp3",text:`Cactus`,dictionary:{}},
+    {title:"18. Camouflage",src:baseUrl + "Camouflage female us.mp3",text:`Camouflage`,dictionary:{}},
+    {title:"19. Cappuccino",src:baseUrl + "Cappuccino male us.mp3",text:`Cappuccino`,dictionary:{}},
+    {title:"20. Casino",src:baseUrl + "Casino male us.mp3",text:`Casino`,dictionary:{}},
+    {title:"21. Cathedral",src:baseUrl + "Cathedral male us.mp3",text:`Cathedral`,dictionary:{}},
+    {title:"22. Charisma",src:baseUrl + "Charisma female us.mp3",text:`Charisma`,dictionary:{}},
+    {title:"23. Chauvinism",src:baseUrl + "Chauvinism male us.mp3",text:`Chauvinism`,dictionary:{}},
+    {title:"24. Chocolate",src:baseUrl + "Chocolate female us.mp3",text:`Chocolate`,dictionary:{}},
+    {title:"25. Cinema",src:baseUrl + "Cinema male us.mp3",text:`Cinema`,dictionary:{}},
+    {title:"26. Circus",src:baseUrl + "Circus male us.mp3",text:`Circus`,dictionary:{}},
+    {title:"27. Cobra",src:baseUrl + "Cobra female us.mp3",text:`Cobra`,dictionary:{}},
+    {title:"28. Coffee",src:baseUrl + "Coffee female us.mp3",text:`Coffee`,dictionary:{}},
+    {title:"29. Credit",src:baseUrl + "Credit male us.mp3",text:`Credit`,dictionary:{}},
+    {title:"30. Croquet",src:baseUrl + "Croquet male us.mp3",text:`Croquet`,dictionary:{}},
+    {title:"31. Deodorant",src:baseUrl + "Deodorant female us.mp3",text:`Deodorant`,dictionary:{}},
+    {title:"32. Desert",src:baseUrl + "Desert male us.mp3",text:`Desert`,dictionary:{}},
+    {title:"33. Despot",src:baseUrl + "Despot male us.mp3",text:`Despot`,dictionary:{}},
+    {title:"34. Disco",src:baseUrl + "Disco female us.mp3",text:`Disco`,dictionary:{}},
+    {title:"35. Doctor",src:baseUrl + "Doctor female us.mp3",text:`Doctor`,dictionary:{}},
+    {title:"36. Dolphin",src:baseUrl + "Dolphin male us.mp3",text:`Dolphin`,dictionary:{}},
+    {title:"37. Eskimo",src:baseUrl + "Eskimo male us.mp3",text:`Eskimo`,dictionary:{}},
+    {title:"38. Ferry boat",src:baseUrl + "Ferry boat female us.mp3",text:`Ferry boat`,dictionary:{}},
+    {title:"39. Flute",src:baseUrl + "Flute male us.mp3",text:`Flute`,dictionary:{}},
+    {title:"40. Flamingo",src:baseUrl + "Flamingo male us.mp3",text:`Flamingo`,dictionary:{}},
+    {title:"41. Mafia",src:baseUrl + "Mafia female us.mp3",text:`Mafia`,dictionary:{}},
+    {title:"42. Massage",src:baseUrl + "Massage female us.mp3",text:`Massage`,dictionary:{}},
+    {title:"43. Mayonnaise",src:baseUrl + "Mayonnaise female us.mp3",text:`Mayonnaise`,dictionary:{}},
+    {title:"44. Menu",src:baseUrl + "Menu male us.mp3",text:`Menu`,dictionary:{}},
+    {title:"45. Ninja",src:baseUrl + "Ninja male us.mp3",text:`Ninja`,dictionary:{}},
+    {title:"46. Pajamas",src:baseUrl + "Pajamas male us.mp3",text:`Pajamas`,dictionary:{}},
+    {title:"47. Panda",src:baseUrl + "Panda male us.mp3",text:`Panda`,dictionary:{}},
+    {title:"48. Pandemic",src:baseUrl + "Pandemic female us.mp3",text:`Pandemic`,dictionary:{}},
+    {title:"49. Panic",src:baseUrl + "Panic female us.mp3",text:`Panic`,dictionary:{}},
+    {title:"50. Parachute",src:baseUrl + "Parachute male us.mp3",text:`Parachute`,dictionary:{}},
+    {title:"51. Penguin",src:baseUrl + "Penguin male us.mp3",text:`Penguin`,dictionary:{}},
+    {title:"52. Petrol",src:baseUrl + "Petrol female us.mp3",text:`Petrol`,dictionary:{}},
+    {title:"53. Picnic",src:baseUrl + "Picnic female us.mp3",text:`Picnic`,dictionary:{}},
+    {title:"54. Pistachio",src:baseUrl + "Pistachio male us.mp3",text:`Pistachio`,dictionary:{}},
+    {title:"55. Pizza",src:baseUrl + "Pizza male us.mp3",text:`Pizza`,dictionary:{}},
+    {title:"56. Police",src:baseUrl + "Police female us.mp3",text:`Police`,dictionary:{}},
+    {title:"57. Potato",src:baseUrl + "Potato male us.mp3",text:`Potato`,dictionary:{}},
+    {title:"58. Quarantine",src:baseUrl + "Quarantine male us.mp3",text:`Quarantine`,dictionary:{}},
+    {title:"59. Raccoon",src:baseUrl + "Raccoon female us.mp3",text:`Raccoon`,dictionary:{}},
+    {title:"60. Radish",src:baseUrl + "Radish male us.mp3",text:`Radish`,dictionary:{}},
+    {title:"61. Robot",src:baseUrl + "Robot male us.mp3",text:`Robot`,dictionary:{}},
+    {title:"62. Rucksack",src:baseUrl + "Rucksack female us.mp3",text:`Rucksack`,dictionary:{}},
+    {title:"63. Sabotage",src:baseUrl + "Sabotage female us.mp3",text:`Sabotage`,dictionary:{}},
+    {title:"64. Samurai",src:baseUrl + "Samurai male us.mp3",text:`Samurai`,dictionary:{}},
+    {title:"65. Sandwich",src:baseUrl + "Sandwich female us.mp3",text:`Sandwich`,dictionary:{}},
+    {title:"66. Sauna",src:baseUrl + "Sauna female us.mp3",text:`Sauna`,dictionary:{}},
+    {title:"67. Shampoo",src:baseUrl + "Shampoo male us.mp3",text:`Shampoo`,dictionary:{}},
+    {title:"68. Spa",src:baseUrl + "Spa female us.mp3",text:`Spa`,dictionary:{}},
+    {title:"69. Sponsor",src:baseUrl + "Sponsor female us.mp3",text:`Sponsor`,dictionary:{}},
+    {title:"70. Sushi",src:baseUrl + "Sushi female us.mp3",text:`Sushi`,dictionary:{}},
+    {title:"71. Taboo",src:baseUrl + "Taboo male us.mp3",text:`Taboo`,dictionary:{}},
+    {title:"72. Tango",src:baseUrl + "Tango male us.mp3",text:`Tango`,dictionary:{}},
+    {title:"73. Tariff",src:baseUrl + "Tariff male us.mp3",text:`Tariff`,dictionary:{}},
+    {title:"74. Therapy",src:baseUrl + "Therapy male us.mp3",text:`Therapy`,dictionary:{}},
+    {title:"75. Tornado",src:baseUrl + "Tornado male us.mp3",text:`Tornado`,dictionary:{}},
+    {title:"76. Tsunami",src:baseUrl + "Tsunami female us.mp3",text:`Tsunami`,dictionary:{}},
+    {title:"77. Typhoon",src:baseUrl + "Typhoon female us.mp3",text:`Typhoon`,dictionary:{}},
+    {title:"78. University",src:baseUrl + "University male us.mp3",text:`University`,dictionary:{}},
+    {title:"79. Vampire",src:baseUrl + "Vampire male us.mp3",text:`Vampire`,dictionary:{}},
+    {title:"80. Vanilla",src:baseUrl + "Vanilla female us.mp3",text:`Vanilla`,dictionary:{}},
+    {title:"81. Volcano",src:baseUrl + "Volcano male us.mp3",text:`Volcano`,dictionary:{}},
+    {title:"82. Yoga",src:baseUrl + "Yoga male us.mp3",text:`Yoga`,dictionary:{}},
+    {title:"83. Yogurt",src:baseUrl + "Yogurt female us.mp3",text:`Yogurt`,dictionary:{}},
+    {title:"84. Zebra",src:baseUrl + "Zebra male us.mp3",text:`Zebra`,dictionary:{}},
+    {title:"85. Zombie",src:baseUrl + "Zombie female us.mp3",text:`Zombie`,dictionary:{}}
+];
+
+const trackContainer=document.getElementById('track-container');
+const audioPlayer=document.getElementById('audio-player');
+const playPauseBtn=document.getElementById('h-play-pause-btn');
+const mainPlayBtn=document.getElementById('h-main-play-btn');
+const nowPlayingTitle=document.getElementById('h-now-playing-title');
+const nowPlayingArtist=document.getElementById('h-now-playing-artist');
+const npArt=document.getElementById('np-art');
+const progressFill=document.getElementById('progress-fill');
+const progressBar=document.getElementById('progress-bar');
+const currentTimeEl=document.getElementById('current-time');
+const durationEl=document.getElementById('duration');
+const prevBtn=document.getElementById('prev-btn');
+const nextBtn=document.getElementById('next-btn');
+const transcriptToggleBtn=document.getElementById('h-transcript-toggle');
+const transcriptContainer=document.getElementById('h-transcript-container');
+const fullscreenBtn=document.getElementById('h-fullscreen-btn');
+const transcriptTitle=document.getElementById('h-transcript-title');
+const transcriptText=document.getElementById('h-transcript-text');
+
+let currentTrackIndex=null;
+let isPlaying=false;
+let delayTimeout=null;
+
+function formatTranscriptWithDict(text,trackDictionary){
+    if(!trackDictionary)return text;
+    return text.replace(/\b([a-zA-Z]+)\b/g,function(match){
+        let lowerMatch=match.toLowerCase();
+        if(trackDictionary[lowerMatch]){
+            return `<span class="dict-word" data-en="${match}" data-tr="${trackDictionary[lowerMatch]}">${match}</span>`;
+        }
+        return match;
+    });
+}
+
+function renderTracks(){
+    trackContainer.innerHTML='';
+    tracks.forEach((track,index)=>{
+        const div=document.createElement('div');
+        div.className='track-item';
+        if(index===currentTrackIndex&&audioPlayer.src!=='')div.classList.add('playing');
+        div.innerHTML=`<div class="track-number">${index+1}</div><div class="track-info"><div class="track-title">${track.title}</div><div class="track-artist">Pronunciation Practice</div></div><div class="track-album">Etymology Cognates</div>`;
+        div.onclick=()=>playTrack(index);
+        trackContainer.appendChild(div);
+    });
+}
+
+function playTrack(index){
+    if(delayTimeout)clearTimeout(delayTimeout);
+    currentTrackIndex=index;
+    const track=tracks[index];
+    nowPlayingTitle.textContent=track.title;
+    nowPlayingArtist.textContent="Pronunciation Practice";
+    if(npArt)npArt.style.display="block";
+    transcriptTitle.textContent=track.title;
+    transcriptText.innerHTML=formatTranscriptWithDict(track.text,track.dictionary);
+    const targetSrc=encodeURI(track.src);
+    if(!audioPlayer.src.includes(targetSrc)){audioPlayer.src=track.src;}
+    audioPlayer.play().catch(e=>console.log(e));
+    isPlaying=true;
+    updatePlayButtons(true);
+    renderTracks();
+}
+
+function togglePlayPause(){
+    if(!audioPlayer.src){if(tracks.length>0)playTrack(0);return;}
+    if(isPlaying){
+        audioPlayer.pause();
+        isPlaying=false;
+        updatePlayButtons(false);
+    }else{
+        audioPlayer.play();
+        isPlaying=true;
+        updatePlayButtons(true);
+    }
+}
+
+function updatePlayButtons(playing){
+    if(playing){
+        playPauseBtn.textContent='⏸';
+        playPauseBtn.classList.add('playing');
+        mainPlayBtn.textContent='⏸';
+        mainPlayBtn.style.paddingLeft='0';
+    }else{
+        playPauseBtn.textContent='▶';
+        playPauseBtn.classList.remove('playing');
+        mainPlayBtn.textContent='▶';
+        mainPlayBtn.style.paddingLeft='5px';
+    }
+}
+
+function playNext(){
+    if(currentTrackIndex!==null&&currentTrackIndex<tracks.length-1)playTrack(currentTrackIndex+1);
+}
+
+function playPrev(){
+    if(currentTrackIndex!==null&&currentTrackIndex>0)playTrack(currentTrackIndex-1);
+    else if(audioPlayer.currentTime>3)audioPlayer.currentTime=0;
+}
+
+playPauseBtn.addEventListener('click',togglePlayPause);
+mainPlayBtn.addEventListener('click',togglePlayPause);
+
+transcriptToggleBtn.addEventListener('click',()=>{
+    transcriptContainer.classList.toggle('show');
+    if(transcriptContainer.classList.contains('show')){
+        transcriptToggleBtn.textContent='📖 Hide Transcript';
+        fullscreenBtn.style.display='inline-block';
+    }else{
+        transcriptToggleBtn.textContent='📖 Show Transcript';
+        fullscreenBtn.style.display='none';
+        transcriptContainer.classList.remove('fullscreen');
+        fullscreenBtn.textContent='⛶ Full Screen';
+        document.body.style.overflow='';
+    }
+});
+
+fullscreenBtn.addEventListener('click',()=>{
+    transcriptContainer.classList.toggle('fullscreen');
+    if(transcriptContainer.classList.contains('fullscreen')){
+        fullscreenBtn.textContent='✖ Exit Full Screen';
+        document.body.style.overflow='hidden';
+    }else{
+        fullscreenBtn.textContent='⛶ Full Screen';
+        document.body.style.overflow='';
+    }
+});
+
+transcriptText.addEventListener('click',function(e){
+    const target=e.target.closest('.dict-word');
+    if(target){
+        if(target.classList.contains('active')){
+            target.classList.remove('active');
+            target.innerHTML=target.getAttribute('data-en');
+        }else{
+            target.classList.add('active');
+            const enWord=target.getAttribute('data-en');
+            const trWord=target.getAttribute('data-tr');
+            target.innerHTML=`<span class="neon-en">${enWord}</span> <span class="neon-tr">[${trWord}]</span>`;
+        }
+    }
+});
+
+nextBtn.addEventListener('click',()=>{if(delayTimeout)clearTimeout(delayTimeout);playNext();});
+prevBtn.addEventListener('click',()=>{if(delayTimeout)clearTimeout(delayTimeout);playPrev();});
+
+audioPlayer.addEventListener('ended',()=>{delayTimeout=setTimeout(()=>{playNext();},3000);});
+
+audioPlayer.addEventListener('timeupdate',()=>{
+    if(audioPlayer.duration){
+        const percent=(audioPlayer.currentTime/audioPlayer.duration)*100;
+        progressFill.style.width=`${percent}%`;
+        currentTimeEl.textContent=formatTime(audioPlayer.currentTime);
+    }
+});
+
+audioPlayer.addEventListener('loadedmetadata',()=>{durationEl.textContent=formatTime(audioPlayer.duration);});
+
+progressBar.addEventListener('click',(e)=>{
+    if(!audioPlayer.duration)return;
+    const rect=progressBar.getBoundingClientRect();
+    const pos=(e.clientX-rect.left)/rect.width;
+    audioPlayer.currentTime=pos*audioPlayer.duration;
+});
+
+function formatTime(seconds){
+    if(isNaN(seconds))return"0:00";
+    const mins=Math.floor(seconds/60);
+    const secs=Math.floor(seconds%60);
+    return`${mins}:${secs<10?'0':''}${secs}`;
+}
+
+renderTracks();
+</script>
+</body>
+</html>
